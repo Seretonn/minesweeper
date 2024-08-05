@@ -1,5 +1,5 @@
 Minesweeper game:
 
 1. Create and show game board
-    1.1. Contains cells empty and mines. They must all be hidden
+    1.1 Contains cells empty and mines. They must all be hidden
 2. Create and show pointer
