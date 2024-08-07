@@ -18,7 +18,7 @@ class Board:
         
         print("\nMinesweeper!\n")
 
-        self.print_board()
+        self.print_board("simple")
 
     def print_board(self, style="fancy"):
         if style == "fancy":
@@ -28,9 +28,11 @@ class Board:
                     print(' | '.join("-" * (len(str(box))) for box in row))
         elif style == "simple":
             for row in self.game_board:
-                print()
                 for box in row:
-                    print(str(box), end=" ")
+                    if box == row[-1]:
+                        print(str(box), end="\n")
+                    else:
+                        print(str(box), end=" | ")
 
     def calculate_mines(self):
         mines = int(round((self.rows * self.cols) * 0.2))
