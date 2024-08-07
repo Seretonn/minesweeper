@@ -1,5 +1,8 @@
 Minesweeper game:
 
 1. Create and show game board
-    1.1 Contains cells empty and mines. They must all be hidden
+    1.1. Determinate which cells contain mines
+        1.1.1. Formula:
+                N Mines = (N Cells = (rows * columns)) * Percentage%
 2. Create and show pointer
+
