@@ -12,13 +12,17 @@ class Board:
     def __init__(self, rows=9, cols=9):
         self.rows = rows
         self.cols = cols
-        self.mines = self.calculate_mines()
+        self.mines = self.calculate_mines(0.21)
         # self.game_board = [[(row, column) for column in range(1, 10)] for row in range(1, 10)]
         self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
         
         print("\nMinesweeper!\n")
 
-        self.print_board("simple")
+        # 1. Place mines
+        self.place_mines()
+
+        # 2. Show board
+        self.print_board("fancy")
 
     def print_board(self, style="fancy"):
         if style == "fancy":
@@ -34,16 +38,18 @@ class Board:
                     else:
                         print(str(box), end=" | ")
 
-    def calculate_mines(self):
-        mines = int(round((self.rows * self.cols) * 0.2))
+    def calculate_mines(self, percentage):
+        mines = int(round((self.rows * self.cols) * percentage))
         return mines
     
     def place_mines(self):
         mines_placed = 0
         while mines_placed < self.mines:
-            
-            pass
-        pass
+            row = random.randint(0, self.rows - 1)
+            col = random.randint(0, self.cols - 1)
+            if not self.game_board[row][col].mine:
+                self.game_board[row][col].put_mine()
+                mines_placed += 1
 
     # OUTDATED - CURRENTLY USELESS
     def search_box(self, row, column):
@@ -78,8 +84,11 @@ class Box:
         self.mine = True
 
     def __str__(self) -> str:
-        return "□"
-
+        if self.mine == True:
+            return "*"
+        else:
+            return "□"
+        
 class Pointer:
     def __init__(self) -> None:
         pass
