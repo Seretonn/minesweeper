@@ -6,3 +6,7 @@ Minesweeper game:
                 N Mines = (N Cells = (rows * columns)) * Percentage%
 2. Create and show pointer
 
+
+To count adjacents mines:
+
+1. Start with 

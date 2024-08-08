@@ -12,33 +12,35 @@ class Board:
     def __init__(self, rows=9, cols=9):
         self.rows = rows
         self.cols = cols
-        self.mines = self.calculate_mines(0.21)
-        # self.game_board = [[(row, column) for column in range(1, 10)] for row in range(1, 10)]
+        self.mines = self.calculate_mines(ratio=21)
         self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
         
         print("\nMinesweeper!\n")
 
         # 1. Place mines
         self.place_mines()
+        self.count_adjacent_mines()
 
-        # 2. Show board
+        # 3. Show board
         self.print_board("fancy")
 
     def print_board(self, style="fancy"):
-        if style == "fancy":
-            for row in self.game_board:
-                print(' | '.join(str(box) for box in row))
-                if not (row == self.game_board[-1]):
-                    print(' | '.join("-" * (len(str(box))) for box in row))
-        elif style == "simple":
-            for row in self.game_board:
-                for box in row:
-                    if box == row[-1]:
-                        print(str(box), end="\n")
-                    else:
-                        print(str(box), end=" | ")
+        match style:
+            case "fancy":
+                for row in self.game_board:
+                    print(' | '.join(str(box) for box in row))
+                    if not (row == self.game_board[-1]):
+                        print(' | '.join("-" * (len(str(box))) for box in row))
+            case "simple":
+                for row in self.game_board:
+                    for box in row:
+                        if box == row[-1]:
+                            print(str(box), end="\n")
+                        else:
+                            print(str(box), end=" | ")
 
-    def calculate_mines(self, percentage):
+    def calculate_mines(self, ratio):
+        percentage = ratio/100
         mines = int(round((self.rows * self.cols) * percentage))
         return mines
     
@@ -51,7 +53,89 @@ class Board:
                 self.game_board[row][col].put_mine()
                 mines_placed += 1
 
-    # OUTDATED - CURRENTLY USELESS
+    def count_adjacent_mines(self):
+        for i, row in enumerate(self.game_board):
+            for j, box in enumerate(row):
+                count = 0
+
+                # Legend:
+
+                # tl = top left         t = top         tr = top right
+
+                # l = left              center          r = right
+
+                # bl = bottom left      b = bottom      br = bottom right
+
+                # Statements:
+
+                # 1. Top:
+                t_box = self.game_board[i - 1][j].mine
+
+                tl_box = self.game_board[i - 1][j - 1].mine
+
+                try:
+                    tr_box = self.game_board[i - 1][j + 1].mine
+                except IndexError:
+                    tr_box = False
+
+                # 2. Center:
+                l_box = row[j - 1].mine
+
+                try:
+                    r_box = row[j + 1].mine
+                except IndexError:
+                    r_box = False
+
+                # 3. Bottom:
+                try:
+                    b_box = self.game_board[i + 1][j].mine
+                except IndexError:
+                    b_box = False
+
+                try:
+                    bl_box = self.game_board[i + 1][j - 1].mine
+                except IndexError:
+                    bl_box = False
+
+                try:
+                    br_box = self.game_board[i + 1][j + 1].mine
+                except IndexError:
+                    br_box = False
+                
+                # End of Statements
+
+                if box.mine == False:
+
+                    # Look for mines in top row
+                    if not i == 0:
+                        if t_box:
+                            count += 1
+                        if tl_box and tr_box:
+                            count += 2
+                        elif tl_box or tr_box:
+                            count += 1
+                    else: pass
+
+                    # Look for mines in current row
+                    if l_box and r_box:
+                        count += 2
+                    elif l_box or r_box:
+                        count += 1
+
+                    # Look for mines in bottom row
+                    if not i == len(self.game_board) - 1:
+                        if b_box:
+                            count += 1
+                        if bl_box and br_box:
+                            count += 2
+                        elif bl_box or br_box:
+                            count += 1
+                    else: pass
+                else: continue
+
+                box.adjacents_mines = count
+
+    # OUTDATED - CURRENTLY USELESS:
     def search_box(self, row, column):
         x = row - 1
         y = column - 1
@@ -65,8 +149,9 @@ class Board:
 class Box:
     def __init__(self, row, col):
         self.row = row
-        self.column = col
-        self.mine = None
+        self.col = col
+        self.coord = (self.row, self.col)
+        self.mine = False
         self.revealed = False
         self.flag = False
         self.adjacents_mines = None
@@ -84,10 +169,15 @@ class Box:
         self.mine = True
 
     def __str__(self) -> str:
-        if self.mine == True:
-            return "*"
+        if not self.revealed:
+            if self.mine:
+                return "⁕"
+            else:
+                return str(self.adjacents_mines)
+        elif not self.revealed and self.flag:
+            return "F"
         else:
-            return "□"
+            return "■"
         
 class Pointer:
     def __init__(self) -> None:
