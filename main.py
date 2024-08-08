@@ -3,9 +3,10 @@ import random
 
 class Game:
     def __init__(self):
+        self.clear()
         self.board = Board()
 
-    def clear():
+    def clear(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
 class Board:
@@ -22,11 +23,11 @@ class Board:
         self.count_adjacent_mines()
 
         # 3. Show board
-        self.print_board("fancy")
+        self.print_board("simple")
 
-    def print_board(self, style="fancy"):
+    def print_board(self, style="large"):
         match style:
-            case "fancy":
+            case "large":
                 for row in self.game_board:
                     print(' | '.join(str(box) for box in row))
                     if not (row == self.game_board[-1]):
@@ -71,7 +72,10 @@ class Board:
                 # 1. Top:
                 t_box = self.game_board[i - 1][j].mine
 
-                tl_box = self.game_board[i - 1][j - 1].mine
+                if j == 0:
+                    tl_box = False
+                else:
+                    tl_box = self.game_board[i - 1][j - 1].mine
 
                 try:
                     tr_box = self.game_board[i - 1][j + 1].mine
@@ -79,7 +83,10 @@ class Board:
                     tr_box = False
 
                 # 2. Center:
-                l_box = row[j - 1].mine
+                if j == 0:
+                    l_box = False
+                else:
+                    l_box = row[j - 1].mine
 
                 try:
                     r_box = row[j + 1].mine
@@ -92,9 +99,9 @@ class Board:
                 except IndexError:
                     b_box = False
 
-                try:
+                if i < self.rows - 1 and j > 0:
                     bl_box = self.game_board[i + 1][j - 1].mine
-                except IndexError:
+                else:
                     bl_box = False
 
                 try:
