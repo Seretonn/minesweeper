@@ -3,11 +3,20 @@ import random
 
 class Game:
     def __init__(self):
+        self.is_running = False
         self.clear()
         self.board = Board()
 
     def clear(self):
         os.system('cls' if os.name == 'nt' else 'clear')
+
+    def pause(text="Press any key to continue..."):
+        if os.name == 'nt':
+            if text:
+                print(text)
+            os.system('pause >nul')
+        else:
+            input(text)
 
 class Board:
     def __init__(self, rows=9, cols=9):
@@ -16,10 +25,13 @@ class Board:
         self.mines = self.calculate_mines(ratio=21)
         self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
         
-        print("\nMinesweeper!\n")
+        print("Minesweeper!")
 
+    def main_func(self):
         # 1. Place mines
         self.place_mines()
+
+        # 2. Giving numbers to boxes
         self.count_adjacent_mines()
 
         # 3. Show board

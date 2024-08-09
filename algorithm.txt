@@ -9,4 +9,24 @@ Minesweeper game:
 
 To count adjacents mines:
 
-1. Start with 
+1. Start with
+
+            t_box = self.game_board[i - 1][j].mine if i > 0 else False
+            tl_box = self.game_board[i - 1][j - 1].mine if i > 0 and j > 0 else False
+            tr_box = self.game_board[i - 1][j + 1].mine if i > 0 and j < self.cols - 1 else False
+
+            l_box = row[j - 1].mine if j > 0 else False
+            r_box = row[j + 1].mine if j < self.cols - 1 else False
+
+            b_box = self.game_board[i + 1][j].mine if i < self.rows - 1 else False
+            bl_box = self.game_board[i + 1][j - 1].mine if i < self.rows - 1 and j > 0 else False
+            br_box = self.game_board[i + 1][j + 1].mine if i < self.rows - 1 and j < self.cols - 1 else False
+
+            if not box.mine:
+                count += int(t_box)
+                count += int(tl_box) + int(tr_box)
+                count += int(l_box) + int(r_box)
+                count += int(b_box)
+                count += int(bl_box) + int(br_box)
+
+            box.adjacents_mines = count
