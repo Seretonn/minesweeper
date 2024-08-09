@@ -4,17 +4,30 @@ import random
 class Game:
     def __init__(self):
         self.is_running = False
-        self.clear()
         self.board = Board()
+
+    def run(self):
+        self.is_running = True
+        self.clear()
+
+        print("Minesweeper!\n")
+
+        self.board.main_func()
+
+        self.pause(None)
+
+    def quit(self):
+        self.is_running = False
 
     def clear(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def pause(text="Press any key to continue..."):
+    def pause(self, text="\nPress any key to continue..."):
         if os.name == 'nt':
-            if text:
-                print(text)
-            os.system('pause >nul')
+            if text is None:
+                print()
+                os.system('pause >nul')
+            else: print(text)
         else:
             input(text)
 
@@ -25,8 +38,6 @@ class Board:
         self.mines = self.calculate_mines(ratio=21)
         self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
         
-        print("Minesweeper!")
-
     def main_func(self):
         # 1. Place mines
         self.place_mines()
@@ -204,3 +215,4 @@ class Pointer:
 
 if __name__ == "__main__":
     game = Game()
+    game.run()
