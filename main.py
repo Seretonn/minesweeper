@@ -4,7 +4,6 @@ import random
 class Game:
     def __init__(self):
         self.is_running = False
-        self.board = None
 
     def run(self):
         self.is_running = True
@@ -45,7 +44,7 @@ class Game:
             self.clear()
             self.title()
 
-            self.board.print_board(style="simple")
+            self.board.print_board(style="large")
 
             choice = input("\nDo you want to quit the game? (y/n)\n\n> ")
 
@@ -86,18 +85,30 @@ class Board:
         self.place_mines()
         self.count_adjacent_mines()
 
-    # def create_board(self):
-    #     self.game_board = [[Box(row, column) for column in range(self.cols)] for row in range(self.rows)]
-
     def print_board(self, style="large"):
         match style:
             case "large":
                 for row in self.game_board:
+                    if row == self.game_board[0]:
+                        for n in range(len(row)):
+                            print(f"{n + 1}" if not n == 0 else f"    {n + 1}", end=" | " if not n == len(row) - 1 else "\n\n")
+                            
+                    print(self.game_board.index(row), end="   ")
+
                     print(' | '.join(str(box) for box in row))
+
                     if not (row == self.game_board[-1]):
+                        print("-", end="   ")
                         print(' | '.join("-" * (len(str(box))) for box in row))
+
             case "simple":
                 for row in self.game_board:
+                    if row == self.game_board[0]:
+                        for n in range(len(row)):
+                            print(f"{n + 1}" if not n == 0 else f"    {n + 1}", end="   " if not n == len(row) - 1 else "\n\n")
+
+                    print(self.game_board.index(row), end="   ")
+                    
                     for box in row:
                         if box == row[-1]:
                             print(str(box), end="\n")
