@@ -44,18 +44,17 @@ class Game:
             self.clear()
             self.title()
 
-            self.board.print_board(style="large")
+            self.board.print_board(style="simple")
 
-            choice = input("\nDo you want to quit the game? (y/n)\n\n> ")
+            operation = input("\nEnter the box coordinate and action:\n\n> ")
+            
+            # (7,3,r)
 
-            match choice:
-                case "y":
-                    current_game = False
-                case "n":
-                    pass
-                case _:
-                    self.pause("Invalid option. Try again")
-            pass
+            if operation == "exit":
+                current_game = False
+                break
+            else:
+                self.board.search_box(operation.split(","))
     
     def title(self):
         print("Minesweeper!\n")
@@ -107,8 +106,8 @@ class Board:
                         for n in range(len(row)):
                             print(f"{n + 1}" if not n == 0 else f"    {n + 1}", end="   " if not n == len(row) - 1 else "\n\n")
 
-                    print(self.game_board.index(row), end="   ")
-                    
+                    print(self.game_board.index(row) + 1, end="   ")
+
                     for box in row:
                         if box == row[-1]:
                             print(str(box), end="\n")
@@ -218,15 +217,25 @@ class Board:
                 box.adjacents_mines = count
 
     # OUTDATED - CURRENTLY USELESS:
-    def search_box(self, row, column):
-        x = row - 1
-        y = column - 1
+    def search_box(self, data):
+        row = int(data[0]) - 1
+        col = int(data[1]) - 1
+        act = data[2]
         
-        print(f"Value is {self.game_board[x][y]}")
-        print(f"Row is {row} > {self.game_board[x]}")
-        print(f"Column is ")
-        for row in self.game_board:
-            print("        " + str(row[2]))
+        box = self.game_board[row][col]
+
+        print()
+
+        if act == "r":
+            box.reveal()
+        else:
+            box.put_flag()
+        
+        # print(f"Value is {self.game_board[x][y]}")
+        # print(f"Row is {row} > {self.game_board[x]}")
+        # print(f"Column is ")
+        # for row in self.game_board:
+        #     print("        " + str(row[2]))
         
 class Box:
     def __init__(self, row, col):
@@ -251,7 +260,7 @@ class Box:
         self.mine = True
 
     def __str__(self) -> str:
-        if not self.revealed:
+        if self.revealed:
             if self.mine:
                 return "⁕"
             else:
