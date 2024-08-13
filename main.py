@@ -4,19 +4,57 @@ import random
 class Game:
     def __init__(self):
         self.is_running = False
-        self.board = Board()
+        self.board = None
 
     def run(self):
         self.is_running = True
-        self.clear()
+        self.game_menu()
 
+    def game_menu(self):
+        while self.is_running:
+            self.clear()
+            
+            self.title()
+
+            choice = input("1. New game\n2. Quit\n\n> ")
+
+            match choice:
+                case "1":
+                    self.new_game()
+                    # break
+                case "2":
+                    self.quit()
+                    # break
+                case _:
+                    self.pause("Invalid option. Try again")
+
+    def new_game(self):
+        self.board = Board()
+        current_game = True
+
+        while current_game:
+            self.clear()
+            self.title()
+
+            self.board.print_board(style="simple")
+
+            choice = input("\nDo you want to quit the game? (y/n)\n\n> ")
+
+            match choice:
+                case "y":
+                    current_game = False
+                case "n":
+                    pass
+                case _:
+                    self.pause("Invalid option. Try again")
+            pass
+    
+    def title(self):
         print("Minesweeper!\n")
 
-        self.board.main_func()
-
-        self.pause(None)
-
     def quit(self):
+        self.clear()
+        print("Thanks for playing!")
         self.is_running = False
 
     def clear(self):
@@ -24,10 +62,9 @@ class Game:
 
     def pause(self, text="\nPress any key to continue..."):
         if os.name == 'nt':
-            if text is None:
-                print()
-                os.system('pause >nul')
-            else: print(text)
+            if text is not None:
+                print("\n" + text, end="")
+            os.system('pause >nul')
         else:
             input(text)
 
@@ -37,16 +74,11 @@ class Board:
         self.cols = cols
         self.mines = self.calculate_mines(ratio=21)
         self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
-        
-    def main_func(self):
-        # 1. Place mines
         self.place_mines()
-
-        # 2. Giving numbers to boxes
         self.count_adjacent_mines()
 
-        # 3. Show board
-        self.print_board("simple")
+    # def create_board(self):
+    #     self.game_board = [[Box(row, column) for column in range(self.cols)] for row in range(self.rows)]
 
     def print_board(self, style="large"):
         match style:
