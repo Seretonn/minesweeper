@@ -16,13 +16,22 @@ class Game:
             
             self.title()
 
-            choice = input("1. New game\n2. Quit\n\n> ")
+            choice = input("1. New game\n2. Instructions\n3. Quit\n\n> ")
 
             match choice:
                 case "1":
                     self.new_game()
                     # break
                 case "2":
+                    self.clear()
+                    print("Instructions:\n")
+                    print("Enter 1 to start a new game and display the grid on the screen")
+                    print("To interact with a box (put a flag, reveal, etc.) you must enter the coordinate of the box")
+                    print("To do that, you must follow the structure of the next example:\n")
+                    print("7,3,r\n")
+                    print("Where 7,3 are the coordinate (row 7, column 3) and \"r\" the action (reveal, could also be \"f\" for put flag)")
+                    self.pause()
+                case "3":
                     self.quit()
                     # break
                 case _:
@@ -60,7 +69,7 @@ class Game:
     def clear(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def pause(self, text="\nPress any key to continue..."):
+    def pause(self, text="Press any key to continue..."):
         if os.name == 'nt':
             if text is not None:
                 print("\n" + text, end="")
