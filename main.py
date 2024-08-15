@@ -4,6 +4,7 @@ import random
 class Game:
     def __init__(self):
         self.is_running = False
+        self.board = None
 
     def run(self):
         self.is_running = True
@@ -44,17 +45,64 @@ class Game:
             self.clear()
             self.title()
 
+            row = None
+            col = None
+            action = None
+
             self.board.print_board(style="simple")
 
-            operation = input("\nEnter the box coordinate and action:\n\n> ")
-            
+            print("\nEnter 0 to exit the game")
+
+            while True:
+                operation = input("\nEnter the box row:\n\n> ")
+                
+                try:
+                    if int(operation) > 0 and int(operation) < self.board.rows + 1:
+                        row = operation
+                    elif int(operation) == 0:
+                        current_game = False
+                        break
+                    else:
+                        self.pause("Invalid input. Try again!")
+                        break
+                except ValueError:
+                    self.pause("Invalid input. Try again!")
+                    break
+
+                operation = input("\nEnter the column:\n\n> ")
+                
+                try:
+                    if int(operation) > 0 and int(operation) < self.board.rows + 1:
+                        col = operation
+                    elif int(operation) == 0:
+                        current_game = False
+                        break
+                    else:
+                        self.pause("Invalid input. Try again!")
+                        break
+                except ValueError:
+                    self.pause("Invalid input. Try again!")
+                    break
+
+                operation = input("\nEnter the action:\n\n> ")
+                
+                match operation:
+                    case "r" | "f":
+                        action = operation
+                    case "0":
+                        current_game = False
+                        break
+                    case _:
+                        self.pause("Invalid input. Try again!")
+                        break
+
+                if row and col and action:
+                    break
+
             # (7,3,r)
 
-            if operation == "exit":
-                current_game = False
-                break
-            else:
-                self.board.search_box(operation.split(","))
+            if row and col and action:
+                self.board.search_box([row, col, action])
     
     def title(self):
         print("Minesweeper!\n")
@@ -81,6 +129,7 @@ class Board:
         self.cols = cols
         self.mines = self.calculate_mines(ratio=21)
         self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
+
         self.place_mines()
         self.count_adjacent_mines()
 
@@ -216,7 +265,6 @@ class Board:
 
                 box.adjacents_mines = count
 
-    # OUTDATED - CURRENTLY USELESS:
     def search_box(self, data):
         row = int(data[0]) - 1
         col = int(data[1]) - 1
