@@ -3,8 +3,10 @@ import random
 
 class Game:
     def __init__(self):
-        self.is_running = False
+        self.box = False
         self.board = None
+        self.playing = False
+        self.is_running = False
 
     def run(self):
         self.is_running = True
@@ -14,7 +16,7 @@ class Game:
         while self.is_running:
             self.clear()
             
-            self.title()
+            self.show_title()
 
             choice = input("1. New game\n2. Instructions\n3. Quit\n\n> ")
 
@@ -39,17 +41,30 @@ class Game:
 
     def new_game(self):
         self.board = Board()
-        current_game = True
+        self.playing = True
+        win = False
+        lose = False
 
-        while current_game:
-            self.clear()
-            self.title()
-
+        while self.playing:
             row = None
             col = None
             action = None
+            
+            self.clear()
+
+            if win:
+                print("Congratulations! You won!\n")
+            elif lose:
+                self.show_game_over()
+            else:
+                self.show_title()
 
             self.board.print_board(style="simple")
+
+            if lose or win:
+                self.pause("Press any key to go back to menu")
+                self.stop_playing()
+                break
 
             print("\nEnter 0 to exit the game")
 
@@ -58,9 +73,9 @@ class Game:
                 
                 try:
                     if int(operation) > 0 and int(operation) < self.board.rows + 1:
-                        row = operation
+                        row = int(operation) - 1
                     elif int(operation) == 0:
-                        current_game = False
+                        self.stop_playing()
                         break
                     else:
                         self.pause("Invalid input. Try again!")
@@ -73,9 +88,9 @@ class Game:
                 
                 try:
                     if int(operation) > 0 and int(operation) < self.board.rows + 1:
-                        col = operation
+                        col = int(operation) - 1
                     elif int(operation) == 0:
-                        current_game = False
+                        self.stop_playing()
                         break
                     else:
                         self.pause("Invalid input. Try again!")
@@ -90,26 +105,51 @@ class Game:
                     case "r" | "f":
                         action = operation
                     case "0":
-                        current_game = False
+                        self.stop_playing()
                         break
                     case _:
                         self.pause("Invalid input. Try again!")
                         break
 
-                if row and col and action:
-                    break
+                self.box = self.board.get_box(row, col)
+                break
 
-            # (7,3,r)
+            if self.box:
+                self.board.act_to_box(self.box, action)
 
-            if row and col and action:
-                self.board.search_box([row, col, action])
-    
-    def title(self):
+                # Check Win
+                win = self.check_win()
+
+                # Check Game Over
+                lose = self.check_game_over()
+
+    def show_title(self):
         print("Minesweeper!\n")
 
+    def check_win(self):
+        if self.board.flagged_mines == self.board.mines:
+            return True
+        else:
+            return False
+
+    def check_game_over(self):
+        if self.box.mine and self.box.revealed:
+            self.board.reveal_all_mines()
+            self.pause("You hit a mine!")
+            return True
+        else:
+            return False
+
+    def show_game_over(self):
+        print("Game Over!\n")
+
+    def stop_playing(self):
+        self.playing = False
+    
     def quit(self):
         self.clear()
         print("Thanks for playing!")
+        self.stop_playing()
         self.is_running = False
 
     def clear(self):
@@ -127,19 +167,21 @@ class Board:
     def __init__(self, rows=9, cols=9):
         self.rows = rows
         self.cols = cols
+        self.flagged_mines = 0
         self.mines = self.calculate_mines(ratio=21)
         self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
 
         self.place_mines()
         self.count_adjacent_mines()
 
-    def print_board(self, style="large"):
+    def print_board(self, style="simple"):
         match style:
             case "large":
                 for row in self.game_board:
                     if row == self.game_board[0]:
                         for n in range(len(row)):
-                            print(f"{n + 1}" if not n == 0 else f"    {n + 1}", end=" | " if not n == len(row) - 1 else "\n\n")
+                            print(f"{n + 1}" if not n == 0 else f"    {n + 1}", 
+                                  end=" | " if not n == len(row) - 1 else "\n\n")
                             
                     print(self.game_board.index(row), end="   ")
 
@@ -265,25 +307,25 @@ class Board:
 
                 box.adjacents_mines = count
 
-    def search_box(self, data):
-        row = int(data[0]) - 1
-        col = int(data[1]) - 1
-        act = data[2]
-        
-        box = self.game_board[row][col]
+    def reveal_all_mines(self):
+        for row in self.game_board:
+            for box in row:
+                if box.mine:
+                    box.reveal()
 
-        print()
+    def add_to_flaggeds(self):
+        self.flagged_mines += 1
 
+    def get_box(self, row, col):
+        return self.game_board[row][col]
+
+    def act_to_box(self, box, act):
         if act == "r":
             box.reveal()
         else:
             box.put_flag()
-        
-        # print(f"Value is {self.game_board[x][y]}")
-        # print(f"Row is {row} > {self.game_board[x]}")
-        # print(f"Column is ")
-        # for row in self.game_board:
-        #     print("        " + str(row[2]))
+            if box.mine and box.flag:
+                self.add_to_flaggeds()
         
 class Box:
     def __init__(self, row, col):
