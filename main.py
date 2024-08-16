@@ -323,7 +323,10 @@ class Board:
         if act == "r":
             box.reveal()
         else:
-            box.put_flag()
+            if box.flag:
+                box.remove_flag()
+            else:
+                box.put_flag()
             if box.mine and box.flag:
                 self.add_to_flaggeds()
         
@@ -350,14 +353,14 @@ class Box:
         self.mine = True
 
     def __str__(self) -> str:
-        if self.revealed:
+        if not self.revealed:
             if self.mine:
                 return "⁕"
             else:
                 return str(self.adjacents_mines)
         elif not self.revealed and self.flag:
             return "F"
-        else:
+        elif not self.revealed:
             return "■"
         
 class Pointer:
