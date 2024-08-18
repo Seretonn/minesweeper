@@ -4,7 +4,6 @@ from typing import Literal
 
 class Game:
     def __init__(self):
-        self.box = False
         self.board = None
         self.playing = False
         self.is_running = False
@@ -45,6 +44,7 @@ class Game:
         self.playing = True
         win = False
         lose = False
+        box = None
 
         while self.playing:
             row = None
@@ -114,17 +114,17 @@ class Game:
                         self.pause("Invalid input. Try again!")
                         break
 
-                self.box = self.board.get_box(row, col)
+                box = self.board.get_box(row, col)
                 break
 
-            if self.box:
-                self.board.act_to_box(self.box, action)
+            if box:
+                self.board.act_to_box(box, action)
 
                 # Check Win
                 win = self.check_win()
 
                 # Check Game Over
-                lose = self.check_game_over()
+                lose = self.check_game_over(box)
 
     def check_win(self):
         if self.board.flagged_mines == self.board.mines:
@@ -132,10 +132,10 @@ class Game:
         else:
             return False
 
-    def check_game_over(self):
-        if self.box.mine and self.box.revealed:
-            self.board.reveal_all_mines()
+    def check_game_over(self, box):
+        if box.mine and box.revealed:
             self.pause("You hit a mine!")
+            self.board.reveal_all_mines()
             return True
         else:
             return False
@@ -384,7 +384,10 @@ class Box:
         self.adjacent_flags = 0
 
     def reveal(self):
-        self.revealed = True
+        if self.flag:
+            pass
+        else:
+            self.revealed = True
 
     def put_flag(self):
         self.flag = True
