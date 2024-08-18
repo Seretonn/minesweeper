@@ -1,5 +1,6 @@
 import os
 import random
+from typing import Literal
 
 class Game:
     def __init__(self):
@@ -16,7 +17,7 @@ class Game:
         while self.is_running:
             self.clear()
             
-            self.show_title()
+            print("Minesweeper!\n")
 
             choice = input("1. New game\n2. Instructions\n3. Quit\n\n> ")
 
@@ -55,11 +56,13 @@ class Game:
             if win:
                 print("Congratulations! You won!\n")
             elif lose:
-                self.show_game_over()
+                print("Game Over!\n")
             else:
-                self.show_title()
+                print("Minesweeper!\n")
+
 
             self.board.print_board(style="simple")
+            self.board.check_adjacency(attribute="flag")
 
             if lose or win:
                 self.pause("Press any key to go back to menu")
@@ -123,9 +126,6 @@ class Game:
                 # Check Game Over
                 lose = self.check_game_over()
 
-    def show_title(self):
-        print("Minesweeper!\n")
-
     def check_win(self):
         if self.board.flagged_mines == self.board.mines:
             return True
@@ -139,9 +139,6 @@ class Game:
             return True
         else:
             return False
-
-    def show_game_over(self):
-        print("Game Over!\n")
 
     def stop_playing(self):
         self.playing = False
@@ -172,9 +169,9 @@ class Board:
         self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
 
         self.place_mines()
-        self.count_adjacent_mines()
+        self.check_adjacency(attribute="mine")
 
-    def print_board(self, style="simple"):
+    def print_board(self, style: Literal["simple", "large"] = "simple"):
         match style:
             case "large":
                 for row in self.game_board:
@@ -216,14 +213,14 @@ class Board:
             row = random.randint(0, self.rows - 1)
             col = random.randint(0, self.cols - 1)
             if not self.game_board[row][col].mine:
-                self.game_board[row][col].put_mine()
+                self.game_board[row][col].bury_mine()
                 mines_placed += 1
 
-    def count_adjacent_mines(self):
+    def check_adjacency(self, attribute: Literal["mine", "flag"]):
         for i, row in enumerate(self.game_board):
             for j, box in enumerate(row):
                 count = 0
-
+                
                 # Legend:
 
                 # tl = top left         t = top         tr = top right
@@ -234,78 +231,61 @@ class Board:
 
                 # Statements:
 
-                # 1. Top:
-                t_box = self.game_board[i - 1][j].mine
-
-                if j == 0:
-                    tl_box = False
-                else:
-                    tl_box = self.game_board[i - 1][j - 1].mine
-
-                try:
-                    tr_box = self.game_board[i - 1][j + 1].mine
-                except IndexError:
-                    tr_box = False
-
-                # 2. Center:
-                if j == 0:
-                    l_box = False
-                else:
-                    l_box = row[j - 1].mine
-
-                try:
-                    r_box = row[j + 1].mine
-                except IndexError:
-                    r_box = False
-
-                # 3. Bottom:
-                try:
-                    b_box = self.game_board[i + 1][j].mine
-                except IndexError:
-                    b_box = False
-
-                if i < self.rows - 1 and j > 0:
-                    bl_box = self.game_board[i + 1][j - 1].mine
-                else:
-                    bl_box = False
-
-                try:
-                    br_box = self.game_board[i + 1][j + 1].mine
-                except IndexError:
-                    br_box = False
-                
-                # End of Statements
-
-                if box.mine == False:
-
-                    # Look for mines in top row
-                    if not i == 0:
-                        if t_box:
-                            count += 1
-                        if tl_box and tr_box:
-                            count += 2
-                        elif tl_box or tr_box:
-                            count += 1
-                    else: pass
-
-                    # Look for mines in current row
-                    if l_box and r_box:
-                        count += 2
-                    elif l_box or r_box:
+                # 1. Top row:
+                # --- Top center:
+                if i > 0:
+                    t_box = getattr(self.game_board[i - 1][j], attribute)
+                    if t_box:
                         count += 1
 
-                    # Look for mines in bottom row
-                    if not i == len(self.game_board) - 1:
-                        if b_box:
+                    # --- Top left:
+                    if j > 0:
+                        tl_box = getattr(self.game_board[i - 1][j - 1], attribute)
+                        if tl_box:
                             count += 1
-                        if bl_box and br_box:
-                            count += 2
-                        elif bl_box or br_box:
-                            count += 1
-                    else: pass
-                else: continue
 
-                box.adjacent_mines = count
+                    # --- Top right:
+                    if j < self.cols - 1:
+                        tr_box = getattr(self.game_board[i - 1][j + 1], attribute)
+                        if tr_box:
+                            count += 1
+
+                # 2. Center row:
+                # --- Left
+                if j > 0:
+                    l_box = getattr(row[j - 1], attribute)
+                    if l_box:
+                        count += 1
+
+                # --- Right
+                if j < self.cols - 1:
+                    r_box = getattr(row[j + 1], attribute)
+                    if r_box:
+                        count += 1
+
+                # 3. Bottom:
+                # --- Bottom center
+                if i < self.rows - 1:
+                    b_box = getattr(self.game_board[i + 1][j], attribute)
+                    if b_box:
+                        count += 1
+                    
+                    # --- Bottom left
+                    if j > 0:
+                        bl_box = getattr(self.game_board[i + 1][j - 1], attribute)
+                        if bl_box:
+                            count += 1
+
+                    # --- Bottom right
+                    if j < self.cols - 1:
+                        br_box = getattr(self.game_board[i + 1][j + 1], attribute)
+                        if br_box:
+                            count += 1
+
+                if attribute == "mine":
+                    box.adjacent_mines = count
+                else:
+                    box.adjacent_flags = count
 
     def reveal_all_mines(self):
         for row in self.game_board:
@@ -325,32 +305,21 @@ class Board:
 
                     # bl = bottom left      b = bottom      br = bottom right
 
-                    # Statements:
-
                     # 1. Top row:
                     # --- Top center:
-                    # if not i == 0:
                     if i > 0:
                         t_box = self.game_board[i - 1][j]
                         t_box.reveal()
 
                         # --- Top left:
                         if j > 0:
-                        # if not j == 0:
                             tl_box = self.game_board[i - 1][j - 1]
                             tl_box.reveal()
 
                         # --- Top right:
                         if j < self.cols - 1:
-                        # if not j == self.cols - 1:
                             tr_box = self.game_board[i - 1][j + 1]
                             tr_box.reveal()
-
-                    # try:
-                    #     tr_box = self.game_board[i - 1][j + 1]
-                    #     tr_box.reveal()
-                    # except IndexError:
-                    #     tr_box = False
 
                     # 2. Center row:
                     # --- Left
@@ -363,16 +332,9 @@ class Board:
                         r_box = row[j + 1]
                         r_box.reveal()
 
-                    # try:
-                    #     r_box = row[j + 1]
-                    #     r_box.reveal()
-                    # except IndexError:
-                    #     r_box = False
-
                     # 3. Bottom:
                     # --- Bottom center
                     if i < self.rows - 1:
-                    # if not i == self.rows - 1:
                         b_box = self.game_board[i + 1][j]
                         b_box.reveal()
                         
@@ -381,22 +343,10 @@ class Board:
                             bl_box = self.game_board[i + 1][j - 1]
                             bl_box.reveal()
 
-                        # try:
-                        #     b_box = self.game_board[i + 1][j]
-                        #     b_box.reveal()
-                        # except IndexError:
-                        #     b_box = False
-
                         # --- Bottom right
                         if j < self.cols - 1:
                             br_box = self.game_board[i + 1][j + 1]
                             br_box.reveal()
-                        
-                        # try:
-                        #     br_box = self.game_board[i + 1][j + 1]
-                        #     br_box
-                        # except IndexError:
-                        #     br_box = False
                     break
 
     def add_to_flaggeds(self):
@@ -410,7 +360,7 @@ class Board:
 
     def act_to_box(self, box, act):
         if act == "r":
-            if box.adjacent_mines == 0:
+            if (not box.mine and box.adjacent_mines == 0) or (box.adjacent_flags == box.adjacent_mines):
                 self.reveal_adjacent_boxes(box)
             box.reveal()
         else:
@@ -427,11 +377,11 @@ class Box:
     def __init__(self, row, col):
         self.row = row
         self.col = col
-        self.coord = (self.row, self.col)
         self.mine = False
-        self.revealed = False
         self.flag = False
-        self.adjacent_mines = None
+        self.revealed = False
+        self.adjacent_mines = 0
+        self.adjacent_flags = 0
 
     def reveal(self):
         self.revealed = True
@@ -442,7 +392,7 @@ class Box:
     def remove_flag(self):
         self.flag = False
 
-    def put_mine(self):
+    def bury_mine(self):
         self.mine = True
 
     def __str__(self) -> str:
@@ -453,7 +403,7 @@ class Box:
                 return str(self.adjacent_mines)
                 
                 # Line for return a blank space (" ") instead of 0 when adjacent_mines is 0 ↴
-                # return str(self.adjacent_mines if self.adjacent_mines > 0 else " ")
+                # return str(self.adjacent_mines if self.adjacent_mines > 0 else " ")       ←
         elif not self.revealed and self.flag:
             return "F"
         elif not self.revealed:
