@@ -62,7 +62,9 @@ class Game:
 
 
             self.board.print_board(style="simple")
-            self.board.check_adjacency(attribute="flag")
+
+            if not win or not lose:
+                self.board.check_adjacency(attribute="flag")
 
             if lose or win:
                 self.pause("Press any key to go back to menu")
@@ -124,21 +126,24 @@ class Game:
                 win = self.check_win()
 
                 # Check Game Over
-                lose = self.check_game_over(box)
+                lose = self.check_game_over()
 
     def check_win(self):
         if self.board.flagged_mines == self.board.mines:
+            self.pause("You have flagged all the mines!")
+            self.board.reveal_all___(attribute="boxes")
             return True
         else:
             return False
 
-    def check_game_over(self, box):
-        if box.mine and box.revealed:
-            self.pause("You hit a mine!")
-            self.board.reveal_all_mines()
-            return True
-        else:
-            return False
+    def check_game_over(self):
+        for row in self.board.game_board:
+            for box in row:
+                if box.mine and box.revealed:
+                    self.pause("You hit a mine!")
+                    self.board.reveal_all___(attribute="mines")
+                    return True
+        return False
 
     def stop_playing(self):
         self.playing = False
@@ -161,14 +166,14 @@ class Game:
             input(text)
 
 class Board:
-    def __init__(self, rows=9, cols=9):
+    def __init__(self, rows=9, cols=9, board_style="simple"):
         self.rows = rows
         self.cols = cols
         self.flagged_mines = 0
         self.mines = self.calculate_mines(ratio=21)
         self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
 
-        self.place_mines()
+        self.bury_mines()
         self.check_adjacency(attribute="mine")
 
     def print_board(self, style: Literal["simple", "large"] = "simple"):
@@ -207,7 +212,7 @@ class Board:
         mines = int(round((self.rows * self.cols) * percentage))
         return mines
     
-    def place_mines(self):
+    def bury_mines(self):
         mines_placed = 0
         while mines_placed < self.mines:
             row = random.randint(0, self.rows - 1)
@@ -287,11 +292,14 @@ class Board:
                 else:
                     box.adjacent_flags = count
 
-    def reveal_all_mines(self):
+    def reveal_all___(self, attribute: Literal["boxes", "mines"]):
         for row in self.game_board:
             for box in row:
-                if box.mine:
+                if attribute == "boxes":
                     box.reveal()
+                else:
+                    if box.mine:
+                        box.reveal()
 
     def reveal_adjacent_boxes(self, selected_box):
         for i, row in enumerate(self.game_board):
@@ -306,17 +314,17 @@ class Board:
                     # bl = bottom left      b = bottom      br = bottom right
 
                     # 1. Top row:
-                    # --- Top center:
+                    # --- Top center
                     if i > 0:
                         t_box = self.game_board[i - 1][j]
                         t_box.reveal()
 
-                        # --- Top left:
+                        # --- Top left
                         if j > 0:
                             tl_box = self.game_board[i - 1][j - 1]
                             tl_box.reveal()
 
-                        # --- Top right:
+                        # --- Top right
                         if j < self.cols - 1:
                             tr_box = self.game_board[i - 1][j + 1]
                             tr_box.reveal()
@@ -364,7 +372,7 @@ class Board:
                 if (box.adjacent_mines == 0) or (box.adjacent_flags == box.adjacent_mines):
                     self.reveal_adjacent_boxes(box)
             box.reveal()
-        else:
+        elif act == "f":
             if not box.flag:
                 box.put_flag()
                 if box.mine and box.flag:
@@ -373,6 +381,8 @@ class Board:
                 box.remove_flag()
                 if box.mine and not box.flag:
                     self.subtract_from_flaggeds()
+        else: 
+            pass
         
 class Box:
     def __init__(self, row, col):
@@ -389,7 +399,8 @@ class Box:
             self.revealed = True
 
     def put_flag(self):
-        self.flag = True
+        if not self.revealed:
+            self.flag = True
 
     def remove_flag(self):
         self.flag = False
