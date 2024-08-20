@@ -360,8 +360,9 @@ class Board:
 
     def act_to_box(self, box, act):
         if act == "r":
-            if (not box.mine and box.adjacent_mines == 0) or (box.adjacent_flags == box.adjacent_mines):
-                self.reveal_adjacent_boxes(box)
+            if not box.mine:
+                if (box.adjacent_mines == 0) or (box.adjacent_flags == box.adjacent_mines):
+                    self.reveal_adjacent_boxes(box)
             box.reveal()
         else:
             if not box.flag:
@@ -384,9 +385,7 @@ class Box:
         self.adjacent_flags = 0
 
     def reveal(self):
-        if self.flag:
-            pass
-        else:
+        if not self.flag:
             self.revealed = True
 
     def put_flag(self):
