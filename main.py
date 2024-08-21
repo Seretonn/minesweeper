@@ -120,7 +120,7 @@ class Game:
                 break
 
             if box:
-                self.board.act_to_box(box, action)
+                self.board.apply_act_to_box(box, action)
 
                 # Check Win
                 win = self.check_win()
@@ -302,9 +302,11 @@ class Board:
                         box.reveal()
 
     def reveal_adjacent_boxes(self, selected_box):
+        if selected_box.adjacent_mines == 0:
+            selected_box.isolate()
         for i, row in enumerate(self.game_board):
             for j, box in enumerate(row):
-                if i == selected_box.row and j == selected_box.col:
+                if box == selected_box:
                     # Legend:
 
                     # tl = top left         t = top         tr = top right
@@ -317,44 +319,70 @@ class Board:
                     # --- Top center
                     if i > 0:
                         t_box = self.game_board[i - 1][j]
-                        t_box.reveal()
+                        # Considera que, si box.adjacent_mines == 0:
+                            # self.apply_act_to_box(t_box, "r")
+                        if selected_box.isolated: # or box.adjacent_mines == 0:
+                            self.apply_act_to_box(t_box, "r")
+                        else:
+                            t_box.reveal()
 
                         # --- Top left
                         if j > 0:
                             tl_box = self.game_board[i - 1][j - 1]
-                            tl_box.reveal()
+                            if selected_box.isolated:
+                                self.apply_act_to_box(tl_box, "r")
+                            else:
+                                tl_box.reveal()
 
                         # --- Top right
                         if j < self.cols - 1:
                             tr_box = self.game_board[i - 1][j + 1]
-                            tr_box.reveal()
+                            if selected_box.isolated:
+                                self.apply_act_to_box(tr_box, "r")
+                            else:
+                                tr_box.reveal()
 
                     # 2. Center row:
                     # --- Left
                     if j > 0:
                         l_box = row[j - 1]
-                        l_box.reveal()
+                        if selected_box.isolated:
+                            self.apply_act_to_box(l_box, "r")
+                        else:
+                            l_box.reveal()
 
                     # --- Right
                     if j < self.cols - 1:
                         r_box = row[j + 1]
-                        r_box.reveal()
+                        if selected_box.isolated:
+                            self.apply_act_to_box(r_box, "r")
+                        else:
+                            r_box.reveal()
 
-                    # 3. Bottom:
+                    # 3. Bottom row:
                     # --- Bottom center
                     if i < self.rows - 1:
                         b_box = self.game_board[i + 1][j]
-                        b_box.reveal()
+                        if selected_box.isolated:
+                            self.apply_act_to_box(b_box, "r")
+                        else:
+                            b_box.reveal()
                         
                         # --- Bottom left
                         if j > 0:
                             bl_box = self.game_board[i + 1][j - 1]
-                            bl_box.reveal()
+                            if selected_box.isolated:
+                                self.apply_act_to_box(bl_box, "r")
+                            else:
+                                bl_box.reveal()
 
                         # --- Bottom right
                         if j < self.cols - 1:
                             br_box = self.game_board[i + 1][j + 1]
-                            br_box.reveal()
+                            if selected_box.isolated:
+                                self.apply_act_to_box(br_box, "r")
+                            else:
+                                br_box.reveal()
                     break
 
     def add_to_flaggeds(self):
@@ -366,12 +394,13 @@ class Board:
     def get_box(self, row, col):
         return self.game_board[row][col]
 
-    def act_to_box(self, box, act):
+    def apply_act_to_box(self, box, act):
         if act == "r":
-            if not box.mine:
-                if (box.adjacent_mines == 0) or (box.adjacent_flags == box.adjacent_mines):
-                    self.reveal_adjacent_boxes(box)
-            box.reveal()
+            if not box.isolated:
+                box.reveal()
+                if not box.mine:
+                    if (box.adjacent_mines == 0) or (box.adjacent_flags == box.adjacent_mines):
+                        self.reveal_adjacent_boxes(box)
         elif act == "f":
             if not box.flag:
                 box.put_flag()
@@ -390,9 +419,13 @@ class Box:
         self.col = col
         self.mine = False
         self.flag = False
+        self.isolated = False
         self.revealed = False
         self.adjacent_mines = 0
         self.adjacent_flags = 0
+
+    def isolate(self):
+        self.isolated = True
 
     def reveal(self):
         if not self.flag:
@@ -411,7 +444,7 @@ class Box:
     def __str__(self) -> str:
         if self.revealed:
             if self.mine:
-                return "⁕"
+                return "X"
             else:
                 return str(self.adjacent_mines)
                 
