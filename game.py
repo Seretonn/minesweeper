@@ -237,7 +237,7 @@ class Game:
             input(text)
 
 class Board:
-    def __init__(self, mines_ratio, rows=9, cols=9, board_style="simple"):
+    def __init__(self, mines_ratio=15, rows=9, cols=9, board_style="simple"):
         self.rows = rows
         self.cols = cols
         self.flagged_mines = 0
