@@ -1,7 +1,7 @@
 import random
 from typing import Literal
 
-from box import Box
+from .box import Box
 
 DEFAULT_ROWS = 9
 DEFAULT_COLS = 9
