@@ -1,0 +1,5 @@
+# Board values
+DEFAULT_ROWS = 9
+DEFAULT_COLS = 9
+DEFAULT_MINES_RATIO = 15
+DEFAULT_STYLE = "simple"

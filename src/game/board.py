@@ -2,19 +2,15 @@ import random
 from typing import Literal
 
 from .box import Box
-
-DEFAULT_ROWS = 9
-DEFAULT_COLS = 9
-DEFAULT_MINES_RATIO = 15
-DEFAULT_STYLE = "simple"
+from . import config
 
 class Board:
     def __init__(
             self, 
-            rows=DEFAULT_ROWS, 
-            cols=DEFAULT_COLS, 
-            mines_ratio=DEFAULT_MINES_RATIO, 
-            board_style=DEFAULT_STYLE
+            rows: int = config.DEFAULT_ROWS, 
+            cols: int = config.DEFAULT_COLS, 
+            mines_ratio: int = config.DEFAULT_MINES_RATIO, 
+            board_style: str = config.DEFAULT_STYLE
             ):
         self.rows = rows
         self.cols = cols
