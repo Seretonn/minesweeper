@@ -3,6 +3,7 @@ from typing import Literal
 
 from .box import Box
 from . import config
+from game import box
 
 class Board:
     def __init__(
@@ -53,7 +54,7 @@ class Board:
                         print("-", end="   ")
                         print(' | '.join("-" * (len(str(box))) for box in row))
 
-    def calculate_mines(self, ratio) -> int:
+    def calculate_mines(self, ratio: int) -> int:
         mines, percentage = 0, 0
         percentage = ratio/100
         mines = int(round((self.rows * self.cols) * percentage))
@@ -148,7 +149,7 @@ class Board:
                     if box.mine:
                         box.reveal()
 
-    def reveal_adjacent_boxes(self, selected_box) -> None:
+    def reveal_adjacent_boxes(self, selected_box: Box) -> None:
         if selected_box.adjacent_mines == 0:
             selected_box.fresearse()
         for i, row in enumerate(self.game_board):
@@ -240,10 +241,10 @@ class Board:
     def subtract_from_flaggeds(self) -> None:
         self.flagged_mines -= 1
 
-    def get_box(self, row, col) -> Box:
+    def get_box(self, row: int, col: int) -> Box:
         return self.game_board[row][col]
 
-    def apply_act_to_box(self, box, act) -> None:
+    def apply_act_to_box(self, box: Box, act: str) -> None:
         if act == "r":
             if not box.pajuo:
                 if not box.mine:
