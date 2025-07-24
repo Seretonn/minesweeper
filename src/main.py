@@ -1,14 +1,15 @@
 import os
 
+import game.config as config
 from game.board import Board
 
 class Game:
     def __init__(self) -> None:
         self.playing: bool = False
         self.is_running: bool = False
-        self.difficulty = None
-        self.board = None
-        self.board_properties = { 
+        self.difficulty: dict = None
+        self.board: Board = None
+        self.board_properties: list = { 
             "rows": 0,
             "cols": 0,
             "style": None,
@@ -24,6 +25,9 @@ class Game:
     def run(self) -> None:
         self.is_running = True
         self.game_menu()
+
+    def stop_running(self) -> None:
+        self.is_running = False
 
     def game_menu(self) -> None:
         while self.is_running:
@@ -48,11 +52,12 @@ class Game:
                     self.pause("Invalid option. Try again")
 
     def new_game(self):
-        self.playing = True
+        self.start_playing()
 
         self.difficulty = self.set_difficulty()
 
-        self.board = Board(self.difficulty.get("rows"), self.difficulty.get("cols"), self.difficulty.get("mines ratio"))
+        if self.difficulty is not None:
+            self.board = Board(self.difficulty.get("rows"), self.difficulty.get("cols"), self.difficulty.get("mines ratio"))
 
         win = False
         lose = False
@@ -72,9 +77,9 @@ class Game:
             else:
                 print("Minesweeper!\n")
 
-                # print(f"Mines in board: {self.board.mines}\n")
+            # print(f"Mines in board: {self.board.mines}\n")
 
-            self.board.print_board(style="simple")
+            self.board.print_board()
 
             if not win or not lose:
                 self.board.check_adjacency(attribute="flag")
@@ -141,7 +146,7 @@ class Game:
                 # Check Game Over
                 lose = self.check_game_over()
 
-    def set_difficulty(self):
+    def set_difficulty(self) -> dict:
         while self.playing:
             self.clear()
 
@@ -153,38 +158,19 @@ class Game:
 
             operation = input("> ")
 
-            difficulty = {}
-
             match operation:
                 case "1":
-                    difficulty = {
-                        "level": "begginer",
-                        "rows": 9,
-                        "cols": 9,
-                        "mines ratio": 15,
-                    }
+                    return config.DIFFICULTIES["begginer"]
                 case "2":
-                    difficulty = {
-                        "level": "intermediate",
-                        "rows": 16,
-                        "cols": 16,
-                        "mines ratio": 18,
-                    }
+                    return config.DIFFICULTIES["intermediate"]
                 case "3":
-                    difficulty = {
-                        "level": "expert",
-                        "rows": 16,
-                        "cols": 30,
-                        "mines ratio": 21,
-                    }
+                    return config.DIFFICULTIES["expert"]
                 case "0":
                     self.stop_playing()
                     break
                 case _:
                     self.pause("Invalid input. Try again!")
                     continue
-            
-            return difficulty
 
     # OUTDATED
     def intructions(self):
@@ -223,7 +209,7 @@ class Game:
         self.clear()
         print("Thanks for playing!")
         self.stop_playing()
-        self.is_running = False
+        self.stop_running()
 
     def clear(self):
         os.system('cls' if os.name == 'nt' else 'clear')

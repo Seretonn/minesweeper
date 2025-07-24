@@ -3,7 +3,6 @@ from typing import Literal
 
 from .box import Box
 from . import config
-from game import box
 
 class Board:
     def __init__(
