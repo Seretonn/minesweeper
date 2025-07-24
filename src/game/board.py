@@ -11,7 +11,7 @@ class Board:
             cols: int = config.DEFAULT_COLS, 
             mines_ratio: int = config.DEFAULT_MINES_RATIO, 
             board_style: str = config.DEFAULT_STYLE
-            ) -> None:
+    ) -> None:
         self.rows: int = rows
         self.cols: int = cols
         self.flagged_mines: int = 0

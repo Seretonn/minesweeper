@@ -23,6 +23,8 @@ DIFFICULTIES = {
     }
 }
 
+DEFAULT_DIFFICULTY = DIFFICULTIES["begginer"]
+
 # Box appearance
 EMPTY = " "
 MINE = "X"

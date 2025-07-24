@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import game.config as config
 from game.board import Board
@@ -7,14 +8,8 @@ class Game:
     def __init__(self) -> None:
         self.playing: bool = False
         self.is_running: bool = False
-        self.difficulty: dict = None
-        self.board: Board = None
-        self.board_properties: list = { 
-            "rows": 0,
-            "cols": 0,
-            "style": None,
-            "mines ratio": 0
-        }
+        self.difficulty: Optional[dict] = None
+        self.board: Optional[Board] = None
 
     def start_playing(self) -> None:
         self.playing = True
@@ -56,8 +51,15 @@ class Game:
 
         self.difficulty = self.set_difficulty()
 
-        if self.difficulty is not None:
-            self.board = Board(self.difficulty.get("rows"), self.difficulty.get("cols"), self.difficulty.get("mines ratio"))
+        if not self.difficulty:
+            self.stop_playing()
+            return
+
+        self.board = Board(
+            rows = self.difficulty.get("rows", config.DEFAULT_ROWS),
+            cols = self.difficulty.get("cols", config.DEFAULT_COLS), 
+            mines_ratio = self.difficulty.get("mines ratio", config.DEFAULT_MINES_RATIO)
+        )
 
         win = False
         lose = False
@@ -137,7 +139,7 @@ class Game:
                 box = self.board.get_box(row, col)
                 break
 
-            if box:
+            if box and action:
                 self.board.apply_act_to_box(box, action)
 
                 # Check Win
@@ -146,7 +148,7 @@ class Game:
                 # Check Game Over
                 lose = self.check_game_over()
 
-    def set_difficulty(self) -> dict:
+    def set_difficulty(self) -> Optional[dict]:
         while self.playing:
             self.clear()
 
@@ -189,6 +191,9 @@ class Game:
         pass
 
     def check_win(self):
+        # Calembe linter que me obliga a poner esta validacion nojoda
+        if not self.board:
+            return False        
         if self.board.flagged_mines == self.board.mines:
             self.pause("You have flagged all the mines!")
             self.board.reveal_all___(attribute="boxes")
@@ -197,6 +202,9 @@ class Game:
             return False
 
     def check_game_over(self):
+        # Y aqui tambien, linter der coño
+        if not self.board:
+            return False
         for row in self.board.game_board:
             for box in row:
                 if box.mine and box.revealed:
