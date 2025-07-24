@@ -3,9 +3,9 @@ import os
 from game.board import Board
 
 class Game:
-    def __init__(self):
-        self.playing = False
-        self.is_running = False
+    def __init__(self) -> None:
+        self.playing: bool = False
+        self.is_running: bool = False
         self.difficulty = None
         self.board = None
         self.board_properties = { 
@@ -15,11 +15,17 @@ class Game:
             "mines ratio": 0
         }
 
-    def run(self):
+    def start_playing(self) -> None:
+        self.playing = True
+
+    def stop_playing(self) -> None:
+        self.playing = False
+
+    def run(self) -> None:
         self.is_running = True
         self.game_menu()
 
-    def game_menu(self):
+    def game_menu(self) -> None:
         while self.is_running:
             self.clear()
             
@@ -46,8 +52,7 @@ class Game:
 
         self.difficulty = self.set_difficulty()
 
-        if self.playing and self.difficulty is not None:
-            self.board = Board(self.difficulty.get("rows"), self.difficulty.get("cols"), self.difficulty.get("mines ratio"))
+        self.board = Board(self.difficulty.get("rows"), self.difficulty.get("cols"), self.difficulty.get("mines ratio"))
 
         win = False
         lose = False
@@ -213,9 +218,6 @@ class Game:
                     self.board.reveal_all___(attribute="mines")
                     return True
         return False
-
-    def stop_playing(self):
-        self.playing = False
 
     def quit(self):
         self.clear()

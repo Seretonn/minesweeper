@@ -11,32 +11,18 @@ class Board:
             cols: int = config.DEFAULT_COLS, 
             mines_ratio: int = config.DEFAULT_MINES_RATIO, 
             board_style: str = config.DEFAULT_STYLE
-            ):
-        self.rows = rows
-        self.cols = cols
-        self.flagged_mines = 0
-        self.mines = self.calculate_mines(mines_ratio) # if mines == None else mines
-        self.game_board = [[Box(row, column) for column in range(cols)] for row in range(rows)]
+            ) -> None:
+        self.rows: int = rows
+        self.cols: int = cols
+        self.flagged_mines: int = 0
+        self.mines: int = self.calculate_mines(mines_ratio) # if mines == None else mines
+        self.game_board: list[list[Box]] = [[Box(row, column) for column in range(cols)] for row in range(rows)]
 
         self.bury_mines()
         self.check_adjacency(attribute="mine")
 
-    def print_board(self, style: Literal["simple", "large"] = "simple"):
+    def print_board(self, style: Literal["simple", "large"] = "simple") -> None:
         match style:
-            case "large":
-                for row in self.game_board:
-                    if row == self.game_board[0]:
-                        for n in range(len(row)):
-                            print(f"{n + 1}" if not n == 0 else f"    {n + 1}", end=" | " if not n == len(row) - 1 else "\n\n")
-                            
-                    print(self.game_board.index(row), end="   ")
-
-                    print(' | '.join(str(box) for box in row))
-
-                    if not (row == self.game_board[-1]):
-                        print("-", end="   ")
-                        print(' | '.join("-" * (len(str(box))) for box in row))
-
             case "simple":
                 for i, row in enumerate(self.game_board):
                     if row == self.game_board[0]:
@@ -53,13 +39,27 @@ class Board:
                         else:
                             print(str(box), end=" | ")
 
+            case "large":
+                for row in self.game_board:
+                    if row == self.game_board[0]:
+                        for n in range(len(row)):
+                            print(f"{n + 1}" if not n == 0 else f"    {n + 1}", end=" | " if not n == len(row) - 1 else "\n\n")
+                            
+                    print(self.game_board.index(row), end="   ")
+
+                    print(' | '.join(str(box) for box in row))
+
+                    if not (row == self.game_board[-1]):
+                        print("-", end="   ")
+                        print(' | '.join("-" * (len(str(box))) for box in row))
+
     def calculate_mines(self, ratio) -> int:
         mines, percentage = 0, 0
         percentage = ratio/100
         mines = int(round((self.rows * self.cols) * percentage))
         return mines
     
-    def bury_mines(self):
+    def bury_mines(self) -> None:
         mines_buried = 0
         while mines_buried < self.mines:
             row = random.randint(0, self.rows - 1)
@@ -68,7 +68,7 @@ class Board:
                 self.game_board[row][col].bury_mine()
                 mines_buried += 1
 
-    def check_adjacency(self, attribute: Literal["mine", "flag"]):
+    def check_adjacency(self, attribute: Literal["mine", "flag"]) -> None:
         for i, row in enumerate(self.game_board):
             for j, box in enumerate(row):
                 count = 0
@@ -139,7 +139,7 @@ class Board:
                 else:
                     box.adjacent_flags = count
 
-    def reveal_all___(self, attribute: Literal["boxes", "mines"]):
+    def reveal_all___(self, attribute: Literal["boxes", "mines"]) -> None:
         for row in self.game_board:
             for box in row:
                 if attribute == "boxes":
@@ -148,7 +148,7 @@ class Board:
                     if box.mine:
                         box.reveal()
 
-    def reveal_adjacent_boxes(self, selected_box):
+    def reveal_adjacent_boxes(self, selected_box) -> None:
         if selected_box.adjacent_mines == 0:
             selected_box.fresearse()
         for i, row in enumerate(self.game_board):
@@ -234,16 +234,16 @@ class Board:
                                 br_box.reveal()
                     break
 
-    def add_to_flaggeds(self):
+    def add_to_flaggeds(self) -> None:
         self.flagged_mines += 1
 
-    def subtract_from_flaggeds(self):
+    def subtract_from_flaggeds(self) -> None:
         self.flagged_mines -= 1
 
-    def get_box(self, row, col):
+    def get_box(self, row, col) -> Box:
         return self.game_board[row][col]
 
-    def apply_act_to_box(self, box, act):
+    def apply_act_to_box(self, box, act) -> None:
         if act == "r":
             if not box.pajuo:
                 if not box.mine:
